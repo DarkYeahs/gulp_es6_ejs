@@ -16,6 +16,10 @@ const sass = require('gulp-sass')
 // 静态服务器
 const browserSync = require('browser-sync').create();
 
+var proxyMiddleware = require('http-proxy-middleware');
+
+const server = require('gulp-devserver');
+
 const reload = browserSync.reload
 
 const gutil = require('gulp-util')
@@ -99,8 +103,28 @@ gulp.task('browser-sync', function() {
        'dist/css/*.css',
        'dist/js/*.js'
     ];
+    // 反向代理百度图片在自己的页面上
+    var proxyAdtime = proxyMiddleware('/img', {
+        target: 'http://www.baidu.com',
+        headers: {
+            host:'www.baidu.com'
+        }
+      });
+    var proxyData = proxyMiddleware('/api', {
+        target: 'https://api.douban.com',
+        headers: {
+            host:'api.douban.com'
+        },
+        pathRewrite: {
+            '^/api' : '/',     // rewrite path 
+        }
+      });
    browserSync.init({
-     server: { baseDir: "dist" }
+     server: {
+        baseDir: "dist",
+        middleware: [proxyAdtime, proxyData]
+
+    }
    });
 });// 代理
 // 监视文件变化，自动执行任务
@@ -109,19 +133,6 @@ gulp.task('watch', function(){
   gulp.watch('src/js/*.js', ['convertJS', reload]);
   gulp.watch('src/templates/**/*.*', ['ejs', reload]);
   gulp.watch('src/templates/*.html', ['ejs', reload]);
-})
-
-
-
-// // browserify
-// gulp.task("browserify", function () {
-//     var b = browserify({
-//         entries: "dist/js/app.js"
-//     });
-//
-//     return b.bundle()
-//         .pipe(source("bundle.js"))
-//         .pipe(gulp.dest("dist/js"));
-// });
+});
 
 gulp.task('start', ['ejs', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
