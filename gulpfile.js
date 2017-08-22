@@ -148,7 +148,7 @@ gulp.task('browser-sync', function() {
             '^/api' : '/',     // rewrite path 
         }
       });
-    var proxyResource = proxyMiddleware(['/scripts', '/themes'], {
+    var proxyResource = proxyMiddleware(['/scripts', '/themes', '/company', '/source'], {
       target: 'http://172.20.132.182:8021',
       headers: {
         host: '172.20.132.182:8021'
@@ -156,7 +156,7 @@ gulp.task('browser-sync', function() {
     })
    browserSync.init({
      server: {
-        baseDir: "dist/html",
+        baseDir: "dist/",
         middleware: [proxyAdtime, proxyData, proxyResource]
 
     }

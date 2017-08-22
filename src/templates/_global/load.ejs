@@ -1,0 +1,7 @@
+<%
+	if (process.env.NODE_ENV == 'development') {
+%>
+  <%- include('dev/load') %>
+<%} else {%>
+  <%- include('build/load') %>
+<%}%>

@@ -1,11 +1,9 @@
 
-  <!DOCTYPE html>
-<html>
+  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta charset="utf-8">
-<title>gulp-ejs-demo | 首页</title>
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="renderer" content="webkit">
+    <title>sourceManager View</title>
 <!-- 公共资源CSS,JS  -->
 <!-- CSS -->
 <link rel="stylesheet" type="text/css" href="/themes/easyui/metro/easyui.css">
@@ -13,6 +11,7 @@
 <link rel="stylesheet" type="text/css" href="/themes/css/FastDevTool.css">
 <link rel="stylesheet" type="text/css" href="/themes/css/diyUpload/css/diyUpload.css">
 <link rel="stylesheet" type="text/css" href="/themes/css/icon.css">
+<link rel="stylesheet" type="text/css" href="../css/index.min.css">
 <!-- Javascript -->
 <!-- <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script> -->
 <script type="text/javascript" src="/scripts/plugins/jquery.js"></script>
@@ -43,82 +42,65 @@
 
 
 
-<body>
-
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-    <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="#">Test</a>
-    </div>
-    <div id="navbar" class="navbar-collapse collapse">
-        <form class="navbar-form navbar-right">
-        <div class="form-group">
-            <input type="text" placeholder="Email" class="form-control">
-        </div>
-        <div class="form-group">
-            <input type="password" placeholder="Password" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-success">Sign in</button>
-        </form>
-    </div><!--/.navbar-collapse -->
-    </div>
-</nav>
-
-  <div class="jumbotron">
-  <div class="container">
-    <h1>Hello, world!</h1>
-    <p>This is a template for a simple marketing or informational website. It includes a large callout called a jumbotron and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
-    <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more »</a></p>
-  </div>
+<body class="easyui-layout">
+<#include "../loading.ftl">
+<div data-options="region:'north',iconCls:'icon-find',title:'查询条件'" border="false"
+     style="border-bottom: 1px solid #D3D3D3;background:#F6F6F6;overflow:hidden;height:100px;">
+    <!-- 条件查询模板内容  -->
+    <form id="searchForm">
+        <dl class="searchBox">
+            <dt>分类名称/ID：</dt>
+            <dd><input name="sourceName" type="text"/></dd>
+        </dl>
+        <dl class="searchBox">
+            <dt>供应商：</dt>
+            <dd>
+                <select id="souSupplier" name="company" style="width:150px;">
+                    <option value="">请选择</option>
+                </select>
+            </dd>
+        </dl>
+        <dl class="searchBox">
+            <dt>服务类型：</dt>
+            <dd>
+                <select id="souServiceType" name="sourceSign" style="width:150px;">
+                    <option value="">请先选择供应商</option>
+                </select>
+            </dd>
+        </dl>
+        <dl class="searchBox">
+            <dt>审核状态：</dt>
+            <dd>
+                <select name="sourceStatus" style="width:150px;">
+                    <option value="">请选择</option>
+                    <option value="5">已审核</option>
+                    <option value="2">待审核</option>
+                    <option value="3">审核不通过</option>
+                    <option value="6">草稿</option>
+                </select>
+            </dd>
+        </dl>
+    </form>
+    <dl class="searchBox">
+        <dd><a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-search'"
+               onclick="view.search();" style="margin-right:5px;">查询</a></dd>
+        <dd><a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'"
+               onclick="view.cleanSearch();">取消</a></dd>
+    </dl>
 </div>
-
-  <div class="container">
-    <!-- Example row of columns -->
-    <div class="row">
-      <div class="col-md-4">
-        <h2>Heading</h2>
-        <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-        <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
-      </div>
-      <div class="col-md-4">
-        <h2>Heading</h2>
-        <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-        <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
-      </div>
-      <div class="col-md-4">
-        <h2>Heading</h2>
-        <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-        <p><a class="btn btn-default" href="#" role="button">View details »</a></p>
-      </div>
-    </div>
-    <hr>
-    <footer>
-    <p>© Company 2016</p>
-</footer>
-  </div>
-  
-  
-
-<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
-
-
-
-<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
-
-
-
-
-
-<script src="../js/index.js?hash=1503381790271"></script>
-
-
-
+<div data-options="region:'center'" border="false">
+    <table id="data-list"></table>
+</div>
+<div id="addWin"></div>
+<div id="editWin"></div>
+<div id="auditWin"></div>
 </body>
+<script type="text/javascript" src="/scripts/common/Sortable.js"></script>
+<script type="text/javascript" src="http://mockjs.com/dist/mock.js"></script>
+<script type="text/javascript">
+    var time = new Date().getTime();
+    var viewSource = "/scripts/view/class/sourceManager/sourceManagerView.js?time=" + time;
+    var viewScript = $("<script src=\"" + viewSource +  "\"><\/script>");
+    $('body').append(viewScript);
+</script>
 </html>
