@@ -3,6 +3,8 @@ const babel = require('gulp-babel');
 const uglify = require('gulp-uglify');
 // 重命名文件插件
 const rename = require('gulp-rename');
+
+const md5 = require('md5');
 // css文件压缩插件
 const cssnano = require('gulp-cssnano');
 // 文件合并插件
@@ -30,17 +32,31 @@ const ejs = require('gulp-ejs')
 // 文件读取模块
 const fs = require('fs');
 const path = require('path');
-
+const del = require('del');
 // 读取文件夹下子文件列表
-let getFiles = (src) => {
+let getFiles = (src, ext = '') => {
   let fileList = []
   let files = fs.readdirSync(src);
+  console.log(files)
   files.forEach((filename) => {
     let fullname = path.join(src,filename);
     let stats = fs.statSync(fullname);
     if (stats.isFile()) {
-      console.log(fullname)
+      console.log(path.extname(fullname), ext)
+      if (ext && path.extname(fullname) !== ext) return
       fileList.push(fullname)
+    }
+    else {
+      let itemFiles = fs.readdirSync(fullname);
+      itemFiles.forEach((itemFilename) => {
+        if (itemFilename === 'modules') return
+        let itemFullname = path.join(fullname,itemFilename);
+        let itemStats = fs.statSync(itemFullname);
+        if (stats.isFile()) {
+          if (ext && path.extname(itemFullname) !== ext) return
+          fileList.push(itemFullname)
+        }
+      })
     }
   });
   return fileList;
@@ -48,20 +64,29 @@ let getFiles = (src) => {
 
 // 模版合并
 gulp.task('ejs', function(){
-    gulp.src('src/templates/*.html')
+    var res = gulp.src('src/templates/modules/**/*.html')
         .pipe(data(function (file) {
             var filePath = file.path;
             // global.json 全局数据，页面中直接通过属性名调用
             return Object.assign(JSON.parse(fs.readFileSync('src/templates/global.json')), {
                 // local: 每个页面对应的数据，页面中通过 local.属性 调用
-                local: JSON.parse(fs.readFileSync( path.join(path.dirname(filePath), path.basename(filePath, '.html') + '.json')))
+                local: JSON.parse(fs.readFileSync( path.join(path.dirname(filePath), path.basename(filePath, '.html') + '.json'))),
+                hash: new Date().getTime()
             })
         }))
         .pipe(ejs().on('error', function(err) {
             gutil.log(err);
             this.emit('end');
         }))
-        .pipe(gulp.dest('dist'));
+        .pipe(rename({dirname: ''}));
+        if (process.env.NODE_ENV == 'build') {
+          res.pipe(rename({extname: '.ftl'}))
+            .pipe(gulp.dest('dist/html'));
+        }
+        else {
+          res.pipe(gulp.dest('dist/html'));
+        }
+        return res;
 });
 // 编译并压缩js
 gulp.task('convertJS', () => {
@@ -90,12 +115,16 @@ gulp.task('scss:compile', () => {
 
 // 合并并压缩css
 gulp.task('convertCSS', function(){
-  return gulp.src('src/css/*.css')
-    .pipe(cssnano())
-    .pipe(rename(function(path){
-      path.basename += '.min';
-    }))
-    .pipe(gulp.dest('dist/css'));
+  let entries = getFiles('./src/css')
+  entries.forEach((item) => {
+    gulp.src(item)
+      .pipe(cssnano())
+      .pipe(rename(function(path){
+        path.basename += '.min';
+      }))
+      .pipe(gulp.dest('dist/css'));
+  })
+  return gulp
 })
 gulp.task('browser-sync', function() {
     var files = [
@@ -119,10 +148,16 @@ gulp.task('browser-sync', function() {
             '^/api' : '/',     // rewrite path 
         }
       });
+    var proxyResource = proxyMiddleware(['/scripts', '/themes'], {
+      target: 'http://172.20.132.182:8021',
+      headers: {
+        host: '172.20.132.182:8021'
+      }
+    })
    browserSync.init({
      server: {
-        baseDir: "dist",
-        middleware: [proxyAdtime, proxyData]
+        baseDir: "dist/html",
+        middleware: [proxyAdtime, proxyData, proxyResource]
 
     }
    });
@@ -135,4 +170,7 @@ gulp.task('watch', function(){
   gulp.watch('src/templates/*.html', ['ejs', reload]);
 });
 
-gulp.task('start', ['ejs', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
+
+gulp.task('dev', ['ejs', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
+
+gulp.task('build', ['ejs', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch'])

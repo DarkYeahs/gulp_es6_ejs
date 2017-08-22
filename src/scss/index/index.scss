@@ -1,0 +1,13 @@
+$test: 0;
+body {
+  padding: 0;
+  margin: 0;
+  .test {
+    position: absolute;
+    top: $test;
+  }
+  .test2 {
+    position: relative;
+    top: $test;
+  }
+}
