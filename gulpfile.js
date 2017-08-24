@@ -145,7 +145,7 @@ gulp.task('browser-sync', function() {
             host:'api.douban.com'
         },
         pathRewrite: {
-            '^/api' : '/',     // rewrite path 
+            '^/api' : '/'     // rewrite path 
         }
       });
     var proxyResource = proxyMiddleware(['/scripts', '/themes', '/company', '/source'], {
@@ -154,10 +154,19 @@ gulp.task('browser-sync', function() {
         host: '172.20.132.182:8021'
       }
     })
+    var proxyLogin = proxyMiddleware(['/login', '/userlogin', '/checkCaptcha'], {
+      target: 'http://172.20.132.182:8021',
+      headers: {
+        host: '172.20.132.182:8021'
+      },
+      pathRewrite: {
+        '^/login': '/'
+      }
+    })
    browserSync.init({
      server: {
         baseDir: "dist/",
-        middleware: [proxyAdtime, proxyData, proxyResource]
+        middleware: [proxyAdtime, proxyData, proxyResource, proxyLogin]
 
     }
    });
