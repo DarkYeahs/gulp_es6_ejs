@@ -37,12 +37,10 @@ const del = require('del');
 let getFiles = (src, ext = '') => {
   let fileList = []
   let files = fs.readdirSync(src);
-  console.log(files)
   files.forEach((filename) => {
     let fullname = path.join(src,filename);
     let stats = fs.statSync(fullname);
     if (stats.isFile()) {
-      console.log(path.extname(fullname), ext)
       if (ext && path.extname(fullname) !== ext) return
       fileList.push(fullname)
     }
@@ -51,8 +49,11 @@ let getFiles = (src, ext = '') => {
       itemFiles.forEach((itemFilename) => {
         if (itemFilename === 'modules') return
         let itemFullname = path.join(fullname,itemFilename);
+        console.log(itemFullname)
         let itemStats = fs.statSync(itemFullname);
-        if (stats.isFile()) {
+        console.log(itemStats.isFile())
+        if (itemStats.isFile()) {
+          console.log(ext && path.extname(itemFullname) !== ext)
           if (ext && path.extname(itemFullname) !== ext) return
           fileList.push(itemFullname)
         }
@@ -91,19 +92,19 @@ gulp.task('ejs', function(){
 // 编译并压缩js
 gulp.task('convertJS', () => {
   let entrie = getFiles('./src/js')
+  console.log(entrie)
   entrie.forEach((item) => {
     gulp.src(item)
       .pipe(babel({
         presets: ['es2015']
       }))
       .pipe(uglify())
-      .pipe(gulp.dest('./dist/js'))
+      .pipe(gulp.dest('dist/js'))
   })
   return gulp
 });
 
 gulp.task('scss:compile', () => {
-  console.log('scss:compile start')
   let entries = getFiles('./src/scss')
   entries.forEach((item) => {
     gulp.src(item)

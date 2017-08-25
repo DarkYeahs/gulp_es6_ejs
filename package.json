@@ -8,7 +8,7 @@
     "scss:compile": "gulp scss:compile",
     "dev": "npm run clean && cross-env NODE_ENV=development gulp dev",
     "build": "npm run clean && cross-env NODE_ENV=build gulp build",
-    "clean": "rm -rf dist/*"
+    "clean": "rm -rf dist/* && cp -r src/assets/ dist/"
   },
   "keywords": [],
   "author": "",
