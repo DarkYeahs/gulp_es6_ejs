@@ -33,6 +33,7 @@ const ejs = require('gulp-ejs')
 const fs = require('fs');
 const path = require('path');
 const del = require('del');
+const eslint = require('gulp-eslint');
 // 读取文件夹下子文件列表
 let getFiles = (src, ext = '') => {
   let fileList = []
@@ -49,11 +50,8 @@ let getFiles = (src, ext = '') => {
       itemFiles.forEach((itemFilename) => {
         if (itemFilename === 'modules') return
         let itemFullname = path.join(fullname,itemFilename);
-        console.log(itemFullname)
         let itemStats = fs.statSync(itemFullname);
-        console.log(itemStats.isFile())
         if (itemStats.isFile()) {
-          console.log(ext && path.extname(itemFullname) !== ext)
           if (ext && path.extname(itemFullname) !== ext) return
           fileList.push(itemFullname)
         }
@@ -92,14 +90,27 @@ gulp.task('ejs', function(){
 // 编译并压缩js
 gulp.task('convertJS', () => {
   let entrie = getFiles('./src/js')
-  console.log(entrie)
   entrie.forEach((item) => {
     gulp.src(item)
+      .pipe(eslint())
+      .pipe(eslint.format())
+      .pipe(eslint.failAfterError())
       .pipe(babel({
         presets: ['es2015']
       }))
       .pipe(uglify())
       .pipe(gulp.dest('dist/js'))
+  })
+  return gulp
+});
+
+gulp.task('eslint', () => {
+  let entrie = getFiles('./src/js')
+  entrie.forEach((item) => {
+    gulp.src(item)
+      .pipe(eslint())
+      .pipe(eslint.format())
+      .pipe(eslint.failAfterError());
   })
   return gulp
 });
@@ -131,7 +142,8 @@ gulp.task('browser-sync', function() {
     var files = [
        'dist/*.html',
        'dist/css/*.css',
-       'dist/js/*.js'
+       'dist/js/*.js',
+       'dist/js/**/*.js',
     ];
     // 反向代理百度图片在自己的页面上
     var proxyAdtime = proxyMiddleware('/img', {
@@ -175,12 +187,12 @@ gulp.task('browser-sync', function() {
 // 监视文件变化，自动执行任务
 gulp.task('watch', function(){
   gulp.watch('src/scss/*.scss', ['scss:compile', 'convertCSS', reload]);
-  gulp.watch('src/js/*.js', ['convertJS', reload]);
+  gulp.watch('src/js/*.js', ['eslint', 'convertJS', reload]);
   gulp.watch('src/templates/**/*.*', ['ejs', reload]);
   gulp.watch('src/templates/*.html', ['ejs', reload]);
 });
 
 
-gulp.task('dev', ['ejs', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
+gulp.task('dev', ['ejs', 'eslint', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
 
-gulp.task('build', ['ejs', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch'])
+gulp.task('build', ['ejs', 'eslint', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch'])

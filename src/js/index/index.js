@@ -1,1 +1,2 @@
-let test = 'test'
+let t = '2'
+console.log(t)
