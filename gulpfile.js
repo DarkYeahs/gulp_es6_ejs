@@ -92,9 +92,6 @@ gulp.task('convertJS', () => {
   let entrie = getFiles('./src/js')
   entrie.forEach((item) => {
     gulp.src(item)
-      .pipe(eslint())
-      .pipe(eslint.format())
-      .pipe(eslint.failAfterError())
       .pipe(babel({
         presets: ['es2015']
       }))
@@ -110,9 +107,10 @@ gulp.task('eslint', () => {
     gulp.src(item)
       .pipe(eslint())
       .pipe(eslint.format())
-      .pipe(eslint.failAfterError());
+      .pipe(eslint.failAfterError())
+      .on('error', gutil.log)
   })
-  return gulp
+  return true
 });
 
 gulp.task('scss:compile', () => {
@@ -187,7 +185,9 @@ gulp.task('browser-sync', function() {
 // 监视文件变化，自动执行任务
 gulp.task('watch', function(){
   gulp.watch('src/scss/*.scss', ['scss:compile', 'convertCSS', reload]);
+  gulp.watch('src/scss/**/*.scss', ['scss:compile', 'convertCSS', reload]);
   gulp.watch('src/js/*.js', ['eslint', 'convertJS', reload]);
+  gulp.watch('src/js/**/*.js', ['eslint', 'convertJS', reload]);
   gulp.watch('src/templates/**/*.*', ['ejs', reload]);
   gulp.watch('src/templates/*.html', ['ejs', reload]);
 });
