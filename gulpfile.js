@@ -34,6 +34,8 @@ const fs = require('fs');
 const path = require('path');
 const del = require('del');
 const eslint = require('gulp-eslint');
+const plumber = require('gulp-plumber');
+let errItem = [], errMsg = []
 // 读取文件夹下子文件列表
 let getFiles = (src, ext = '') => {
   let fileList = []
@@ -77,15 +79,9 @@ gulp.task('ejs', function(){
             gutil.log(err);
             this.emit('end');
         }))
-        .pipe(rename({dirname: ''}));
-        if (process.env.NODE_ENV == 'build') {
-          res.pipe(rename({extname: '.ftl'}))
-            .pipe(gulp.dest('dist/html'));
-        }
-        else {
-          res.pipe(gulp.dest('dist/html'));
-        }
-        return res;
+        .pipe(rename({dirname: ''}))
+        .pipe(rename({extname: process.env.NODE_ENV == 'build' ? '.ftl' : '.html'}))
+        .pipe(gulp.dest('dist/html'));
 });
 // 编译并压缩js
 gulp.task('convertJS', () => {
@@ -105,13 +101,90 @@ gulp.task('eslint', () => {
   let entrie = getFiles('./src/js')
   entrie.forEach((item) => {
     gulp.src(item)
+      .pipe(plumber({
+        errorHandler: function(err) {
+          errItem.push(item)
+          errMsg.push(err)
+        }
+      }))
       .pipe(eslint())
       .pipe(eslint.format())
       .pipe(eslint.failAfterError())
-      .on('error', gutil.log)
+      // .on('error', function(err) {
+      //   errItem = item
+      //   errMsg = err
+      //   gulp.start('errHandle')
+      // })
   })
   return true
 });
+gulp.task('checkError', function() {
+  setTimeout(function() {
+    var allErrMsg = []
+    errItem.forEach(function(item, index) {
+      var errItemMsg = errMsg[index]
+      allErrMsg.push('<p style="padding-left:30px; margin: 15px 0; font-size: 20px;">错误文件:' + item + '</p>')
+      allErrMsg.push('<p style="padding-left:30px; margin: 15px 0; font-size: 20px;">错误信息:</p>')
+      for (let i in errItemMsg) {
+        let msg = errItemMsg[i]
+        if (typeof msg === 'string') allErrMsg.push('<p style="padding-left:45px; margin: 15px 0; font-size: 20px;">' + i + ':' + msg + '</p>')
+      }
+    })
+    allErrMsg = allErrMsg.join('')
+    allErrMsg = '<div style="position: absolute; left: 0;top: 0;width: 100%;min-height: 100%;background-color: rgba(0, 0, 0, 0.6);color: #fff;z-index: 100000;">' + allErrMsg + '</div></html>'
+    errItem.forEach(function(item) {
+      let nameString = path.basename(item)
+      let name = nameString.split('.')
+      let modules = name && name[0]
+      let url = 'dist/html/' + modules + '.html'
+      let flag = fs.existsSync(url);
+      let file = null
+      if (flag) {
+        file = fs.readFileSync(url, 'utf8')
+        file = file.replace('</html>', allErrMsg)
+        fs.writeFileSync(url, file, 'utf8');
+      }
+      else {
+          console.log("没有该文件")
+      }
+    })
+    setTimeout(function() {
+      reload()
+    }, 1000)
+  }, 500)
+})
+gulp.task('finishCheck', function() {
+  errItem = []
+  errMsg = []
+})
+gulp.task('errHandle', ['ejs'], function () {
+  setTimeout(function () {
+    let nameString = path.basename(errItem)
+    let name = nameString.split('.')
+    let modules = name && name[0]
+    let url = 'dist/html/' + modules + '.html'
+    let flag = fs.existsSync(url);
+    let file = null
+    if (flag) {
+      let errorMsg = []
+      file = fs.readFileSync(url, 'utf8')
+      for (let i in errMsg) {
+        if (typeof errMsg[i] === 'string') errorMsg.push('<p style="margin: 15px 0; font-size: 20px;">' + i + ':' + errMsg[i] + '</p>')
+      }
+      errorMsg = errorMsg.join('')
+      errorMsg = '<div style="position: absolute; left: 0;top: 0;width: 100%;min-height: 100%;height: auto;padding-left: 30px; background-color: rgba(0, 0, 0, 0.6);color: #fff;z-index: 100000;">' + errorMsg + '</div></html>'
+
+      file = file.replace('</html>', errorMsg)
+      fs.writeFileSync(url, file, 'utf8');
+      setTimeout(function() {
+        reload()
+      }, 1000)
+    }
+    else {
+        console.log("没有该文件")
+    }
+  }, 1000)
+})
 
 gulp.task('scss:compile', () => {
   let entries = getFiles('./src/scss')
@@ -156,7 +229,7 @@ gulp.task('browser-sync', function() {
             host:'api.douban.com'
         },
         pathRewrite: {
-            '^/api' : '/'     // rewrite path 
+            '^/api' : '/'     // rewrite path
         }
       });
     var proxyResource = proxyMiddleware(['/scripts', '/themes', '/company', '/source'], {
@@ -186,13 +259,13 @@ gulp.task('browser-sync', function() {
 gulp.task('watch', function(){
   gulp.watch('src/scss/*.scss', ['scss:compile', 'convertCSS', reload]);
   gulp.watch('src/scss/**/*.scss', ['scss:compile', 'convertCSS', reload]);
-  gulp.watch('src/js/*.js', ['eslint', 'convertJS', reload]);
-  gulp.watch('src/js/**/*.js', ['eslint', 'convertJS', reload]);
+  gulp.watch('src/js/*.js', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', reload]);
+  gulp.watch('src/js/**/*.js', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', reload]);
   gulp.watch('src/templates/**/*.*', ['ejs', reload]);
   gulp.watch('src/templates/*.html', ['ejs', reload]);
 });
 
 
-gulp.task('dev', ['ejs', 'eslint', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
+gulp.task('dev', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
 
-gulp.task('build', ['ejs', 'eslint', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch'])
+gulp.task('build', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch'])
