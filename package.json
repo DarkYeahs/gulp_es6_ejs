@@ -23,6 +23,7 @@
     "async-each-series": "^1.1.0",
     "asynckit": "^0.4.0",
     "autoprefixer": "^7.1.2",
+    "babel-plugin-transform-es2015-classes": "^6.24.1",
     "babel-preset-es2015": "^6.24.1",
     "beeper": "^1.1.1",
     "boom": "^5.2.0",
