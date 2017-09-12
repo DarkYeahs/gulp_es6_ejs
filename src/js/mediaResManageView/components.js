@@ -1096,12 +1096,12 @@ var ccSearch =
 '<div class="cc-search">' +
   '<el-collapse value="1">' +
     '<el-collapse-item title="查询条件" name="1">' +
-      '<el-form :inline="true" :model="formInline" class="search-form-inline" v-ccvalidate>' +
+      '<el-form :inline="true" :model="formInline" class="search-form-inline">' +
         '<el-row>' +
         '<el-col :span="6" v-for="item in props">' +
           '<el-form-item :label="item.label">' +
-            '<el-input size="small" v-if="item.type === \'text\' || !item.type" v-model="formInline[item.field]" v-on:keyup.13.native="onceChange" :placeholder="item.placeholder" v-ccrule="item.placeholder"></el-input>' +
-            '<el-select size="small" v-else-if="item.type === \'select\'" v-model="formInline[item.field]" :placeholder="item.placeholder" @change="selectChange" v-ccrule>' +
+            '<el-input size="small" v-if="item.type === \'text\' || !item.type" v-model="formInline[item.field]" v-on:keyup.13.native="onceChange" :placeholder="item.placeholder"></el-input>' +
+            '<el-select size="small" v-else-if="item.type === \'select\'" v-model="formInline[item.field]" :placeholder="item.placeholder" @change="selectChange">' +
               '<el-option v-for="option in item.options" :key="option.value" :label="option.label" :value="option.value">' +
               '</el-option>' +
             '</el-select>' +

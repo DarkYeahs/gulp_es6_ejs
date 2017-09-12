@@ -1,5 +1,7 @@
 'use strict';
 
+var _methods;
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 Vue.filter('formatter', function (value, fn, row) {
@@ -9,27 +11,73 @@ Vue.filter('formatter', function (value, fn, row) {
 });
 
 Vue.directive('ccvalidate', {
-  bind: function bind(el) {
-    $(el).on('change', 'input, select, textarea', function (e) {
-      console.log(this.value);
-      // let item = $(this)
-      // let val = item.val()
-      // console.log(item, val)
+  bind: function bind(el, _bind, vNode) {
+    var errHandle = function errHandle(inputItem, errMsg) {
+      inputItem.addClass('is-error');
+      var string = '<div class="el-form-item__error">' + errMsg + '</div>';
+      inputItem.find('.el-form-item__error').remove();
+      inputItem.find('.el-form-item__content').append(string);
+    };
+    var removeErrHandle = function removeErrHandle(inputItem) {
+      inputItem.removeClass('is-error');
+      inputItem.find('.el-form-item__error').remove();
+    };
+    $(el).on('focus', 'input, select, textarea', function () {
+      var item = $(this).parents('.el-form-item');
+      item[0].dataset.focus = true;
+    });
+    $(el).on('blur', 'input, select, textarea', function () {
+      var _this2 = this;
+
+      setTimeout(function () {
+        var inputItem = $(_this2).parents('.el-form-item');
+        var dataset = inputItem[0].dataset;
+        var rule = dataset.rule;
+        var errMsg = dataset.errmsg;
+        var focus = dataset.focus;
+        var required = dataset.required;
+        var value = void 0;
+        switch (rule) {
+          case 'number':
+            value = _this2.value;
+            value = +value;
+            _this2.value = value;
+            if (!value && !required && value !== void 0 || required && !value && value !== 0) errHandle(inputItem);else removeErrHandle(inputItem);
+            break;
+          case 'date':
+            value = _this2.value;
+            var date = new Date(value);
+            console.log(date);
+            break;
+          case 'string':
+            value = _this2.value;
+            if (required && value === '') errHandle(inputItem, errMsg);else removeErrHandle(inputItem);
+            break;
+          case 'checkbox':
+            var list = $(_this2).parents('.el-checkbox-group').find('input:checked');
+            if (required && list.length === 0) errHandle(inputItem, errMsg);else removeErrHandle(inputItem);
+            break;
+          default:
+            value = _this2.value;
+            if (required && value === '') errHandle(inputItem, errMsg);else removeErrHandle(inputItem);
+            break;
+        }
+      }, 200);
     });
   }
 });
 
 Vue.directive('ccrule', {
-  componentUpdated: function componentUpdated(el, bind) {
+  inserted: function inserted(el, bind) {
     var rules = bind.value;
-    setTimeout(function () {
-      console.log($(el).find('input, select').val());
-    }, 100);
-    Vue.nextTick(function () {
-      console.log('test');
-    });
     if (rules instanceof Object && !(rules instanceof Array)) {
       var type = rules.type;
+      var required = rules.required;
+      var errmsg = rules.errmsg;
+      if (required) $(el).addClass('is-required');
+      el.dataset.rule = type;
+      el.dataset.required = required || false;
+      el.dataset.errmsg = errmsg;
     }
   }
 });
@@ -180,7 +228,17 @@ var app = new Vue({
         dateType: 'daterange',
         label: '测试3'
       }],
-      tableResult: []
+      tableResult: [],
+      form: {
+        name: '',
+        region: '',
+        date1: '',
+        date2: '',
+        delivery: false,
+        type: [],
+        resource: '',
+        desc: ''
+      }
     };
   },
   watch: {
@@ -198,37 +256,37 @@ var app = new Vue({
     // console.log(this.$refs.table.getSelectedRow)
   },
 
-  methods: {
+  methods: (_methods = {
+    onSubmit: function onSubmit() {
+      console.log('submit!');
+    },
+
     openPreviewWin: function openPreviewWin(data) {
       this.options.defaultDialog = {
         title: '预览页面',
         visible: true,
         src: $basePath + '/mediaResManage/preview.html?thirdId=' + data.thirdId + '&source=' + data.source
       };
-    },
-    onSubmit: function onSubmit() {
-      console.log('submit!');
-    },
-    search: function search(_search) {
-      console.log(_search);
-    },
-    getAppId: function getAppId() {
-      var _this2 = this;
-
-      this.postAjax({ url: '/globalDictInfo/getTypes/appIdType.html' }).done(function (data) {
-        _this2.appIdList = data;
-      }).fail(function (response, err) {
-        console.log(response, err);
-      });
-    },
-    getBusinessType: function getBusinessType() {
-      var _this3 = this;
-
-      this.postAjax({ url: '/globalDictInfo/getTypes/businessType.html' }).done(function (data) {
-        _this3.businessTypeList = data;
-      }).fail(function (response, err) {
-        console.log(response, err);
-      });
     }
-  }
+  }, _defineProperty(_methods, 'onSubmit', function onSubmit() {
+    console.log('submit!');
+  }), _defineProperty(_methods, 'search', function search(_search) {
+    console.log(_search);
+  }), _defineProperty(_methods, 'getAppId', function getAppId() {
+    var _this3 = this;
+
+    this.postAjax({ url: '/globalDictInfo/getTypes/appIdType.html' }).done(function (data) {
+      _this3.appIdList = data;
+    }).fail(function (response, err) {
+      console.log(response, err);
+    });
+  }), _defineProperty(_methods, 'getBusinessType', function getBusinessType() {
+    var _this4 = this;
+
+    this.postAjax({ url: '/globalDictInfo/getTypes/businessType.html' }).done(function (data) {
+      _this4.businessTypeList = data;
+    }).fail(function (response, err) {
+      console.log(response, err);
+    });
+  }), _methods)
 });

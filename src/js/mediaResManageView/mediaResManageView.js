@@ -5,27 +5,75 @@ Vue.filter('formatter', (value,fn, row) => {
 })
 
 Vue.directive('ccvalidate', {
-  bind (el) {
-    $(el).on('change', 'input, select, textarea', function (e) {
-      console.log(this.value)
-      // let item = $(this)
-      // let val = item.val()
-      // console.log(item, val)
+  bind (el, bind, vNode) {
+    let errHandle = (inputItem, errMsg) => {
+      inputItem.addClass('is-error')
+      let string = '<div class="el-form-item__error">' + errMsg + '</div>'
+      inputItem.find('.el-form-item__error').remove()
+      inputItem.find('.el-form-item__content').append(string)
+    }
+    let removeErrHandle = (inputItem) => {
+      inputItem.removeClass('is-error')
+      inputItem.find('.el-form-item__error').remove()
+    }
+    $(el).on('focus', 'input, select, textarea', function() {
+      let item = $(this).parents('.el-form-item')
+      item[0].dataset.focus = true
+    })
+    $(el).on('blur', 'input, select, textarea', function() {
+      setTimeout(() => {
+        let inputItem = $(this).parents('.el-form-item')
+        let dataset = inputItem[0].dataset
+        let rule = dataset.rule
+        let errMsg = dataset.errmsg
+        let focus = dataset.focus
+        let required = dataset.required
+        let value
+        switch (rule) {
+          case 'number':
+            value = this.value
+            value = +value
+            this.value = value
+            if ((!value && !required && value !== void 0) || (required && !value && value !== 0)) errHandle(inputItem)
+            else removeErrHandle(inputItem)
+          break;
+          case 'date':
+            value = this.value
+            let date = new Date(value)
+            console.log(date)
+          break;
+          case 'string':
+            value = this.value
+            if (required && value === '') errHandle(inputItem, errMsg)
+            else removeErrHandle(inputItem)
+          break;
+          case 'checkbox':
+            let list = $(this).parents('.el-checkbox-group').find('input:checked')
+            if (required && list.length === 0) errHandle(inputItem, errMsg)
+            else removeErrHandle(inputItem)
+          break;
+          default:
+            value = this.value
+            if (required && value === '') errHandle(inputItem, errMsg)
+            else removeErrHandle(inputItem)
+          break;
+        }
+      }, 200)
     })
   }
 })
 
 Vue.directive('ccrule', {
-  componentUpdated (el, bind) {
+  inserted (el, bind) {
     let rules = bind.value
-    setTimeout(() => {
-      console.log($(el).find('input, select').val())
-    }, 100)
-    Vue.nextTick(() => {
-      console.log('test')
-    })
     if (rules instanceof Object && !(rules instanceof Array)) {
       let type = rules.type
+      let required = rules.required
+      let errmsg = rules.errmsg
+      if (required) $(el).addClass('is-required')
+      el.dataset.rule = type
+      el.dataset.required = required || false
+      el.dataset.errmsg = errmsg
     }
   }
 })
@@ -188,7 +236,17 @@ var app = new Vue({
           label: '测试3'
         }
       ],
-      tableResult: []
+      tableResult: [],
+      form: {
+        name: '',
+        region: '',
+        date1: '',
+        date2: '',
+        delivery: false,
+        type: [],
+        resource: '',
+        desc: ''
+      }
     }
   },
   watch: {
@@ -206,6 +264,9 @@ var app = new Vue({
     // console.log(this.$refs.table.getSelectedRow)
   },
   methods: {
+    onSubmit() {
+      console.log('submit!');
+    },
     openPreviewWin: function (data) {
       this.options.defaultDialog = {
         title: '预览页面',
