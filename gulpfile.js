@@ -104,8 +104,11 @@ gulp.task('convertJS', () => {
           ["transform-es2015-classes", {"loose": true}],
           "transform-es2015-object-super",
         ]
+      }).on('error', function (err) {
+        gutil.log(err)
+        this.emit('end')
       }))
-      .pipe(uglify())
+      // .pipe(uglify())
       .pipe(gulp.dest('dist/js'))
   })
   return gulp
@@ -164,7 +167,7 @@ gulp.task('checkError', function() {
     setTimeout(function() {
       reload()
     }, 1000)
-  }, 500)
+  }, 1500)
 })
 //  在完成checkError任务后清空错误模块列表以及错误信息列表
 gulp.task('finishCheck', function() {
@@ -236,13 +239,6 @@ gulp.task('browser-sync', function() {
        'dist/js/*.js',
        'dist/js/**/*.js',
     ];
-    // 反向代理百度图片在自己的页面上
-    var proxyAdtime = proxyMiddleware('/img', {
-        target: 'http://www.baidu.com',
-        headers: {
-            host:'www.baidu.com'
-        }
-      });
     var proxyData = proxyMiddleware('/api', {
         target: 'https://api.douban.com',
         headers: {
@@ -252,25 +248,31 @@ gulp.task('browser-sync', function() {
             '^/api' : '/'     // rewrite path
         }
       });
-    var proxyResource = proxyMiddleware(['/scripts', '/themes', '/company', '/source'], {
-      target: 'http://172.20.132.182:8021',
+    var proxyResource = proxyMiddleware(['/scripts', '/themes'], {
+      target: 'http://172.20.132.117:8091/',
       headers: {
-        host: '172.20.132.182:8021'
+        host: '172.20.132.117:8091'
       }
     })
-    var proxyLogin = proxyMiddleware(['/login', '/userlogin', '/checkCaptcha'], {
-      target: 'http://172.20.132.182:8021',
+    var proxyLogin = proxyMiddleware(['/login','/userlogin', '/checkCaptcha','/index'], {
+      target: 'http://172.20.132.117:8091',
       headers: {
-        host: '172.20.132.182:8021'
+        host: '172.20.132.117:8091'
       },
       pathRewrite: {
         '^/login': '/'
       }
     })
+    var proxyRequest = proxyMiddleware(['/tabInfo', '/globalDictInfo'], {
+      target: 'http://172.20.132.117:8091',
+      headers: {
+        host: '172.20.132.117:8091'
+      }
+    })
    browserSync.init({
      server: {
         baseDir: "dist/",
-        middleware: [proxyAdtime, proxyData, proxyResource, proxyLogin]
+        middleware: [proxyData, proxyResource, proxyLogin, proxyRequest]
 
     }
    });
@@ -279,13 +281,16 @@ gulp.task('browser-sync', function() {
 gulp.task('watch', function(){
   gulp.watch('src/scss/*.scss', ['scss:compile', 'convertCSS', reload]);
   gulp.watch('src/scss/**/*.scss', ['scss:compile', 'convertCSS', reload]);
-  gulp.watch('src/js/*.js', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', reload]);
-  gulp.watch('src/js/**/*.js', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', reload]);
+  // gulp.watch('src/js/*.js', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', reload]);
+  gulp.watch('src/js/*.js', ['ejs', 'convertJS', reload]);
+  gulp.watch('src/js/**/*.js', ['ejs', 'convertJS', reload]);
+  // gulp.watch('src/js/**/*.js', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', reload]);
   gulp.watch('src/templates/**/*.*', ['ejs', reload]);
   gulp.watch('src/templates/*.html', ['ejs', reload]);
 });
 
 
-gulp.task('dev', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
+gulp.task('dev', ['ejs', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
+// gulp.task('dev', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', 'scss:compile', 'convertCSS', 'browser-sync', 'watch']);
 
 gulp.task('build', ['ejs', 'eslint', 'checkError', 'finishCheck', 'convertJS', 'scss:compile', 'convertCSS'])

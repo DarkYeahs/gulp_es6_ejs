@@ -1,0 +1,10 @@
+{
+  "title": "首页",
+  "styles": ["//v3.bootcss.com/examples/jumbotron/jumbotron.css"],
+  "scripts": [
+    "../js/utils.js",
+    "../js/components.js",
+    "../js/mediaResManageViewComponents.js",
+    "../js/mediaResManageView.js"
+  ]
+}

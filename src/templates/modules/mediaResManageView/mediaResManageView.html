@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>mediaResManageView</title>
+</head>
+<style>
+  html, body {
+    width: 100%;
+    height: auto;
+    overflow: auto;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  .el-form-item {
+    margin-bottom: 8px;
+  }
+  .search-container {
+    width: 100%;
+    height: auto;
+    border: 1px solid #eee;
+  }
+  .cc-table {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+  }
+</style>
+<body>
+<div id="app">
+  <div class="search-container">
+    <el-collapse ref="test" value="1">
+      <el-collapse-item title="查询条件" name="1">
+      <el-form :inline="true" :model="formInline" class="demo-form-inline">
+        <el-col :span="6">
+          <el-form-item label="版面ID">
+            <el-input v-model="formInline.tabId"></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="版面标题">
+            <el-input v-model="formInline.tabName"></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="版面属性">
+            <el-select v-model="formInline.region" placeholder="请选择">
+              <el-option label="普通版面" value="1"></el-option>
+              <el-option label="普通版面" value="2"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="是否二级tab">
+          <el-select v-model="formInline.hasSubTab" placeholder="请选择">
+            <el-option label="是" value="1"></el-option>
+            <el-option label="否" value="0"></el-option>
+          </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="业务分类">
+            <el-select v-model="formInline.businessType" placeholder="请选择">
+              <el-option
+              v-for="item in businessTypeList"
+              :label="item.dictCnName"
+              :value="item.dictId">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="AppId">
+            <el-select name="tabAppid" v-model="formInline.appId" placeholder="请选择">
+              <el-option
+              v-for="item in appIdList"
+              :key="item.dictEnName"
+              :label="item.dictCnName"
+              :value="item.dictEnName">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="状态">
+            <el-select v-model="formInline.region" name="tabStatus" placeholder="请选择">
+              <el-option label="下架" value="0"></el-option>
+              <el-option label="上架" value="1"></el-option>
+              <el-option label="草稿" value="2"></el-option>
+              <el-option label="待审核" value="3"></el-option>
+              <el-option label="审核通过" value="4"></el-option>
+              <el-option label="审核不通过" value="5"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit">查询</el-button>
+          <el-button type="default" @click="onSubmit">取消</el-button>
+        </el-form-item>
+      </el-form>
+      </el-collapse-item>
+    <el-collapse>
+  </div>
+
+  <div class="test">
+    <cc-search :props="searchOptions" @search="search"></cc-search>
+  </div>
+  <div class="table-content">
+    <tool-bar :options="toolOptions"></tool-bar>
+  </div>
+  <div class="test">
+    <cc-table v-model="tableResult" :multi="true" ref="table" :url="urls.pageUrl" :props="tableColumns"></cc-table>
+  </div>
+</div>
+<%- include('../../_global/public') %>
+<%- include('../../_global/foot') %>
+</body>
+</html>

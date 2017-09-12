@@ -8,6 +8,11 @@ module.exports = {
   plugins: [
     'html'
   ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "jasmine": true
+  },
   // add your custom rules here
   'rules': {
     'import/no-unresolved': 0,
@@ -16,7 +21,7 @@ module.exports = {
     'camelcase': 0,
     'no-fallthrough': 0,
     // allow debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
+    'no-debugger': process.env.NODE_ENV === 'build' ? 2 : 0,
     'no-console': 0,
     'no-unused-vars': [2, {'args': 'none'}],
     'semi': [2, 'never'],
@@ -36,6 +41,9 @@ module.exports = {
     'func-names': [2, 'never'],
     'default-case': 0,
     'no-underscore-dangle': 0,
-    'linebreak-style': ["error", "windows"]
+    'linebreak-style': ["error", "windows"],
+    'no-tabs': 0,
+    //  tab代码缩进以及switch缩进限制
+    'indent': ["error", "tab", { "SwitchCase": 1 }]
   }
 }
