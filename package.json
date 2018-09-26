@@ -39,7 +39,7 @@
     "core-util-is": "^1.0.2",
     "cross-env": "^5.0.5",
     "cross-spawn": "^5.1.0",
-    "cryptiles": "^3.1.2",
+    "cryptiles": "^4.1.2",
     "css-color-names": "^0.0.4",
     "csso": "^3.1.1",
     "dateformat": "^2.0.0",
